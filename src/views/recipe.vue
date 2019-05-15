@@ -3,7 +3,7 @@
     <form action="/">
       <van-search
         v-model="searchVal"
-        placeholder="请输入药品名称"
+        placeholder="请输入处方号、患者、手机号码"
         show-action
         @search="onSearch"
         shape="round"
@@ -41,7 +41,7 @@
           <van-col span="24">
             <van-row type="flex" >
               <van-col span="8"><button class="km-btn-boder-large" @click='reset'>重置</button></van-col>
-              <van-col span="8"><button class="km-btn-boder-large" style='color:#0bccd1' @click='getPanelData("clear")'>搜索</button></van-col>
+              <van-col span="8"><button class="km-btn-boder-large" style='color:#0bccd1' @click='rightModuleClick'>搜索</button></van-col>
             </van-row>
           </van-col>
         </van-row>
@@ -79,7 +79,30 @@
           </van-row>
           <van-row type="flex">
             <van-col span="15">
-              <span class='panel-footer-label'>处方类型：</span>{{item.prescriptionType == 0 ? '电子处方' : '拍照处方'}}
+              <span class='panel-footer-label'>处方类型：
+                <span v-if='item.recipeType == 1'>西药</span>
+                <span v-else-if='item.recipeType == 2'>中成药</span>
+                <span v-else-if='item.recipeType == 3'>中草药 - 
+                  <span v-if='item.recipeTypeCn == 0'>
+                    中药
+                  </span>
+                  <span v-else-if='item.recipeTypeCn == 1'>
+                    西药或中成药
+                  </span>
+                  <span v-else-if='item.recipeTypeCn == 2'>
+                    膏方
+                  </span>
+                  <span v-else-if='item.recipeTypeCn == 3'>
+                    丸剂
+                  </span>
+                  <span v-else-if='item.recipeTypeCn == 5'>
+                    散剂
+                  </span>
+                  <span v-else-if='item.recipeTypeCn == 6'>
+                    固定膏方
+                  </span>
+                </span>
+              </span>
             </van-col>
             <van-col span="9">
               <span class='panel-footer-label' v-if='item.machineStatus == 1'>机审状态：1级</span>
@@ -90,7 +113,7 @@
           </van-row>
           <van-row type="flex">
             <van-col span="24">
-              <span class='panel-footer-label'>处方来源：</span>{{item.requestSourceTypeName}}
+              <span class='panel-footer-label'>处方来源：</span>{{item.requestSourceTypeName}}-{{item.childChannelCodeName}}
             </van-col>
           </van-row>
       </div>
@@ -110,7 +133,7 @@ import qs from 'qs'
   }
 })
 export default class Recipe extends Vue {
-  private selectVal: any = '' // 状态值
+  private selectVal: any = 1 // 状态值
   private rightModuleShow: boolean = false
   private searchVal: string | number = '' // 搜索框值
   private panelData:any = [] // 面板数据
@@ -123,6 +146,7 @@ export default class Recipe extends Vue {
   private childrenSelectVal: any = ''
   private startTime: any = '' //起始时间
   private endTime: any = '' //起始时间
+  private pageTotal: number = 0;
   private recipeType: any[] = [{
     text: '拍方上传',
     name: 1
@@ -156,18 +180,25 @@ export default class Recipe extends Vue {
   }
   onSearch (val:any) {
     this.searchVal = val;
-    // this.panelData = [];
+    this.pageNum = 0;
+    this.panelData = [];
+    this.pageTotal = 0;
     this.getPanelData('clear');
   } // 头部搜索
   radioClick (name: string | number) {
     this.pageNum = 1;
     this.selectVal = name;
     // this.panelData = [];
+    this.pageTotal = 0;
     this.getPanelData('clear'); // 点击切换数据源
   } // 头部单选
   getPanelData (option ?: string):any {
     this.loadingShow = true;
     option === 'clear' && (this.panelData = []);
+    if (this.pageTotal > 0 && (Math.ceil(this.pageTotal / 10) < this.pageNum) && this.$toast('没有更多数据了')) {
+      this.loadingShow = false;
+      return;
+    }
     this.$post((this as any).apis[process.env.NODE_ENV == 'dev' ?  this.$route.path : util.getUrlParams().type].api, this.$route.params.type == 'normal' ? {
       pageNum: this.pageNum,
       pageSize: 10,
@@ -196,7 +227,9 @@ export default class Recipe extends Vue {
       }],
     }).then((res:any):any => {
       this.loadingShow = false;
+      this.pageTotal = res.data.data.total;
       this.panelData = this.panelData.concat(res.data.data.rows);
+      console.log(this.panelData)
       if ((this.panelData.length <= 0) || (res.data.data.rows.length <= 0)) {
         this.$toast('没有更多数据啦');
         this.panelData = [];
@@ -219,6 +252,7 @@ export default class Recipe extends Vue {
   } // 选择来源渠道
   reset () {
     this.pageNum = 1;
+    this.pageTotal = 0;
     this.recipeTypeVal = '';
     this.startTime = '';
     this.endTime = '';
@@ -229,6 +263,11 @@ export default class Recipe extends Vue {
     (this as any).$refs.date['startTime'] = '';
     (this as any).$refs.date['endTime'] = '';
     this.getPanelData('clear');
+  }
+  rightModuleClick () {
+    this.panelData = [];
+    this.pageTotal = 0;
+    this.getPanelData();
   }
   auditDeatil (obj: any) {
     this.$router.push({
@@ -253,6 +292,7 @@ export default class Recipe extends Vue {
     }) // 请求来源
     let _this = this;
     window.onscroll = () => {
+      if(this.$route.params.type == 'normal' || this.$route.params.type == 'question') {
         let Allheight = document.documentElement.scrollHeight || document.body.scrollHeight;
         let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;;
         let viewHeight = document.documentElement.clientHeight || document.body.clientHeight;
@@ -260,6 +300,7 @@ export default class Recipe extends Vue {
           _this.pageNum++;
           _this.getPanelData();
         }
+      }
     }
   }
 }

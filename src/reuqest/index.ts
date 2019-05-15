@@ -9,7 +9,7 @@ axios.defaults.headers.clientType = "3";
 axios.defaults.withCredentials= false,
 axios.defaults.timeout = 30000;
 axios.interceptors.request.use((req:any):any => {
-    req.headers.token = window.localStorage.getItem('token');
+    window.localStorage.getItem('token') && (req.headers.token = window.localStorage.getItem('token') || '');
    return req
 }, (error:any) => {
 })

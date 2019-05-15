@@ -74,10 +74,11 @@ export default class Login extends Vue {
       this.loginStatus && this.loginSubmit();
     }
     getPic () {
-      // this.uuid = "km" + util.guid();
+      this.uuid = "km" + util.guid();
       if (!this.verifyStatus) {
         this.verifyStatus = true;
         this.$get(`system/captcha/captchaImage?type=math&key=${this.uuid}`).then((res:any):any => {
+          console.log(res)
           this.verifyPic = `data:image/gif;base64,${res.data.data.imgsrc}`;
           this.verifyStatus = false;
         })
@@ -105,28 +106,32 @@ export default class Login extends Vue {
         let reuqestData = this.loginStatus ? {
             openId : util.decrypt(window.localStorage.getItem('openId'))
           } : this.verifyShow ? {
+                  code: theRequest.code || '',
                   phoneNumber: util.encrypt(this.username),
                   password: util.encrypt(this.password),
                   validateCode: this.verifyVal,
                   validateCodeKey: this.uuid
             } : {
-                  code: theRequest.code || '081eglb519vY2U1eLJa51ANib51eglbQ',
+                  code: theRequest.code || '0619ZKxk1ppBan0iEMAk1NQOxk19ZKxy',
                   phoneNumber: util.encrypt(this.username),
                   password: util.encrypt(this.password),
                   validateCodeKey: this.uuid
             } // 根据状态决定 传递参数
         this.$post(`applet/wechatGzh/login`, reuqestData).then((res:any):any => {
-          res.data.data && (res.data.data.isCheckValidateCode === '1') ? this.verifyShow = true : this.verifyShow = false;
+          res.data.data && (res.data.data.isCheckValidateCode == '1') ? this.verifyShow = true : this.verifyShow = false;
           if (res.data.code == 0) {
             window.localStorage.setItem("token", res.data.data.token);
             window.localStorage.setItem("openId", util.encrypt(res.data.data.openId));
-            this.$toast(res.data.msg);
+            this.$toast('登陆成功');
             this.errorShow = false;
             this.errorMsg = '';
             window.localStorage.getItem("token") && this.$router.push({path: theRequest.type})
             // window.localStorage.getItem("token") && this.$router.push({path: '/recipe/normal'}); // 跳转至来源url携带的type路由
           } else {
-            this.getPic();
+            if (res.data.data && (res.data.data.isCheckValidateCode == '1')) {
+              this.verifyShow = true;
+              this.getPic();
+            }
             this.verifyVal = '';
             this.password = '';
             this.errorShow = true;

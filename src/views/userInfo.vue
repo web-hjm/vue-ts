@@ -1,9 +1,9 @@
 <template>
     <div class="userInfo">
-        <van-cell-group :border="false">
+        <van-cell-group >
             <van-field v-model="username" label="姓名" @blur="savePersonFn()"/>
         </van-cell-group>
-        <van-cell-group :border="false">
+        <van-cell-group >
             <div class="van-cell van-field">
                 <div class="van-cell__title van-field__label">
                     <span>角色</span>
@@ -13,7 +13,7 @@
                 </div>
             </div>
         </van-cell-group>
-        <van-cell-group :border="false">
+        <van-cell-group >
             <div class="van-cell van-field">
                 <div class="van-cell__title van-field__label">
                     <span>电话</span>

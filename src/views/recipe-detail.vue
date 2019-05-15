@@ -4,10 +4,11 @@
       <span>上一步：{{getPreStatus(progressData.handleStatus)}}</span>
       <span style='margin-left:19.7vw'>{{progressData.handleTime || ""}}</span>
         <van-step>
-          <div @click='$router.push({name: "progress-audit",query: {uId: $route.query.uId}})'>
-            <p>审核状态：{{detailData.machineStatus || ''}}级</p>
-            <p>{{progressData.handlerRealName || progressData.billDoctor || ""}}</p>
-            <p>原因：{{ detailData.auditOpinion || ''}}</p>
+          <div @click='$router.push({name: "progress-audit",query: {uId: $route.query.uId, prescriptionType: detailData.prescriptionType, billDoctor: detailData.billDoctor}})'>
+            <p v-if='detailData.machineStatus == 1 || detailData.machineStatus == 2 || detailData.machineStatus == 3'>审核状态：{{detailData.machineStatus || ''}}级</p>
+            <p v-if='getPreStatus(progressData.handleStatus) != 30'>{{progressData.handlerRealName || progressData.billDoctor || ""}}</p>
+            <p v-if='detailData.machineStatus == 1 || detailData.machineStatus == 2 || detailData.machineStatus == 3'>原因：{{ getPreStatus(progressData.handleStatus) == 30 ?detailData.auditOpinion : (detailData.machineStatus == 1 || detailData.machineStatus == 2 || detailData.machineStatus == 3) ? JSON.parse(progressData.machineResult)[0].machineTitle : '审核通过' }}</p>
+            <p v-if='detailData.machineStatus == 0 || detailData.machineStatus == 9'>审核通过</p>
           </div>
         </van-step>
       <span>当前进度：{{getCurrentStatus(progressData.handleStatus)}}</span>
@@ -24,18 +25,18 @@
         </div>
         <div class="recipe-detail-panel-body">
           <van-row type="flex" >
-              <van-col span="6">
+              <van-col span="8">
                 处方号：
               </van-col>
-              <van-col span="18">
+              <van-col span="16">
                 <span>{{detailData.recipeNum || ''}}</span>
               </van-col>
           </van-row>
           <van-row type="flex" >
-              <van-col span="6">
+              <van-col span="8">
                 处方类型：
               </van-col>
-              <van-col span="18">
+              <van-col span="16">
                 <span v-if='detailData.recipeType == 1'>西药</span>
                 <span v-else-if='detailData.recipeType == 2'>中成药</span>
                 <span v-else-if='detailData.recipeType == 3'>中草药 - 
@@ -61,27 +62,61 @@
               </van-col>
           </van-row>
           <van-row type="flex" >
-              <van-col span="6">
+              <van-col span="8">
                 患者姓名：
               </van-col>
-              <van-col span="18">
+              <van-col span="16">
                 <span>{{detailData.patientName}}</span>
               </van-col>
           </van-row>
           <van-row type="flex" >
-              <van-col span="4">
+              <van-col span="8">
                 性别：
               </van-col>
-              <van-col span="20">
+              <van-col span="16">
                 <span>{{detailData.patientSex==1 ? '男' : '女'}}</span>
               </van-col>
           </van-row>
-          <van-row type="flex" >
-              <van-col span="4">
+          <van-row type="flex" v-if="(String(detailData.patientAge).split(','))[0] < 4">
+              <van-col span="8">
                 体重：
               </van-col>
-              <van-col span="20">
+              <van-col span="16">
                 <span>{{detailData.patientWeight ? (detailData.patientWeight + 'kg') : ''}}</span>
+              </van-col>
+          </van-row>
+          <van-row type="flex" >
+              <van-col span="8">
+                是否孕妇：
+              </van-col>
+              <van-col span="16">
+                <span v-if='detailData.pregnantStatus == 0'>
+                  否
+                </span>
+                <span v-else-if='detailData.recipeTypeCn == 1'>
+                  妊娠期
+                </span>
+                <span v-else-if='detailData.recipeTypeCn == 2'>
+                  哺乳期
+                </span>
+              </van-col>
+          </van-row>
+          <van-row type="flex" >
+              <van-col span="8">
+                孕期：
+              </van-col>
+              <van-col span="16">
+                <span>
+                  {{detailData.pregnantDay || ''}}{{detailData.pregnantUnit || ''}}
+                </span>
+              </van-col>
+          </van-row>
+          <van-row type="flex" v-if="(String(detailData.patientAge).split(','))[0] < 4">
+              <van-col span="8">
+                身高：
+              </van-col>
+              <van-col span="16">
+                <span>{{detailData.patientHeight || ''}}</span>
               </van-col>
           </van-row>
           <van-row type="flex" >
@@ -101,26 +136,26 @@
               </van-col>
           </van-row>
           <van-row type="flex" >
-              <van-col span="6">
+              <van-col span="8">
                 过敏史：
               </van-col>
-              <van-col span="18">
+              <van-col span="16">
                 <span>{{detailData.allergy || ''}}</span>
               </van-col>
           </van-row>
           <van-row type="flex" >
-              <van-col span="6">
+              <van-col span="8">
                 临床诊断：
               </van-col>
-              <van-col span="18">
-                <span>{{detailData.clinicalDiag || ''}}</span>
+              <van-col span="16">
+                <span>{{getDescribeStr(detailData.recipeDiagnoseList)}}</span>
               </van-col>
           </van-row>
           <van-row type="flex" >
-              <van-col span="6">
-                中医症型：
+              <van-col span="8">
+                中医证型：
               </van-col>
-              <van-col span="18">
+              <van-col span="16">
                 <span>{{detailData.tcmSyndrome || ''}}</span>
               </van-col>
           </van-row>
@@ -139,17 +174,17 @@
           <span class='header-title'>药品信息</span>
         </div>
         <div class="recipe-detail-panel-body">
-          <van-row type="flex" v-for='(item, index) in detailData.recipeDrugList' v-if='index%2==0' :gutter='20' style='color:#999999'>
+          <van-row type="flex" v-for='(item, index) in detailData.recipeDrugList' v-if='index%2==0 && (detailData.recipeType != 1 && detailData.recipeType != 2)' :gutter='20' style='color:#999999'>
             <van-col span="12">
               <van-row type="flex" >
                   <van-col span="9">
                   {{item.drugName}}
                   </van-col>
                   <van-col span="9">
-                  {{item.usageName}}
+                  {{item.dosage}}{{item.unit}}
                   </van-col>
                    <van-col span="6">
-                   {{item.dosage}}{{item.unit}}
+                   {{(detailData.recipeType == 1 || detailData.recipeType == 2) ? (item.usageName || '') : (item.decoct || '')}}
                   </van-col>
               </van-row>
             </van-col>
@@ -159,17 +194,24 @@
                   {{detailData.recipeDrugList[index + 1].drugName}}
                   </van-col>
                   <van-col span="9">
-                  {{detailData.recipeDrugList[index + 1].usageName}}
+                  {{detailData.recipeDrugList[index + 1].dosage}}{{detailData.recipeDrugList[index + 1].unit}}
                   </van-col>
                    <van-col span="6">
-                   {{detailData.recipeDrugList[index + 1].dosage}}{{detailData.recipeDrugList[index + 1].unit}}
+                   {{(detailData.recipeType == 1 || detailData.recipeType == 2) ? (detailData.recipeDrugList[index + 1].usageName|| '无') : (detailData.recipeDrugList[index + 1].decoct || '无')}}
                   </van-col>
               </van-row>
             </van-col>
           </van-row>
+          <van-row type="flex" v-for='(item, index) in detailData.recipeDrugList' v-if='(detailData.recipeType == 1 || detailData.recipeType == 2)' :gutter='20' style='color:#999999'>
+              <van-col span="24">
+                  <p>{{item.drugName}}</p>
+                  <p>规格：<span>{{item.model}}</span>&nbsp&nbsp&nbsp<span>数量：{{item.qty}}{{item.qtyUnit || ''}}</span></p>
+                  <p>用药指导：{{item.usageName}}，&nbsp&nbsp{{item.dosage}}{{item.unit}}，&nbsp&nbsp{{item.frequencyName || ''}}</p>
+              </van-col>
+          </van-row>
           <div class='recipe-detail-panel-body-footer'>
-            <hr  v-if='(detailData.recipeType != "1") && (detailData.recipeType != "2")'>
-            <h4 style='font-size:4.3vw' v-if='detailData.recipeType != 1 && detailData.recipeType != 2'>辅料</h4>
+            <hr  v-if='detailData.recipeType == 3 && detailData.recipeTypeCn == 2'>
+            <h4 style='font-size:4.3vw' v-if='detailData.recipeType == 3 && detailData.recipeTypeCn == 2'>辅料</h4>
             <van-row type="flex" v-for='(item, index) in detailData.ingredients' v-if='index%2==0 && detailData.ingredients && ((detailData.recipeType != 1) && (detailData.recipeType != 2))' :gutter='20' style='color:#999999'>
             <van-col span="12">
               <van-row type="flex" :gutter='20'>
@@ -193,15 +235,20 @@
               </van-col>
           </van-row>
           <hr>
-            <van-row type="flex" :gutter='20'>
+            <van-row type="flex" :gutter='20' v-if='(detailData.recipeType == 1 || detailData.recipeType == 2)'>
                 <van-col span="12">
                   剂数：{{detailData.recipeDosage}}
                 </van-col>
             </van-row>
-            <van-row type="flex" :gutter='20' v-show='(detailData.useMethod !=="") && (detailData.recipeDrugList)'>
+            <van-row type="flex" :gutter='20' v-show='(detailData.useMethod !=="") && (detailData.recipeDrugList) && (detailData.recipeType == 3 && detailData.recipeTypeCn !=1)'>
                 <van-col span="24">
-                  用药指导：{{detailData.useMethod == 0 ? '内服' : '外服'}}{{detailData.recipeDrugList?'，'+detailData.recipeDrugList[0].frequencyName:''}}
-									{{detailData.recipeDrugList?'，'+detailData.recipeDrugList[0].usageName:''}}
+                  用药指导：{{detailData.recipeDrugList? detailData.recipeDrugList[0].frequencyName:''}}
+									{{detailData.recipeDrugList?'，'+detailData.recipeDrugList[0].usageName:''}}，{{detailData.singleDose}}
+                </van-col>
+            </van-row>
+            <van-row type="flex" :gutter='20'>
+                <van-col span="12">
+                  （以下空白）
                 </van-col>
             </van-row>
           <hr>
@@ -213,7 +260,7 @@
                   审核药师：{{detailData.auditorRealName || ''}}
                 </van-col>
             </van-row>
-            <van-row type="flex" :gutter='20' v-if='(detailData.recipeType != 1) && (detailData.recipeType != 2)'>
+            <van-row type="flex" :gutter='20'>
                 <van-col span="12">
                   调剂员：{{''}}
                 </van-col>
@@ -224,7 +271,9 @@
           </div>
         </div>
       </van-panel>
-      <van-row type="flex" :gutter='20' style='padding:4.3vw 3vw'>
+      <van-row type="flex" :gutter='20' style='padding:10vw 3vw'>
+      </van-row>
+      <van-row type="flex" :gutter='20' style='padding:4.3vw 3vw' v-if='$route.query.sourceType == "normal" ?(detailData.auditStatus == "1") : (detailData.auditStatus == "3" || detailData.auditStatus == "4")' class='auditContent'>
           <van-col span="12">
             <button class='audit-success' @click='orderFromAudit("success")'>审核通过</button>
           </van-col>
@@ -241,7 +290,7 @@
           problemType: "",
           problemItem: "",
           auditOpinion: ""
-        }}'
+        },$refs.questionClassify["inpVal"] = "",$refs.questionType["inpVal"] = ""}'
       > 
         <van-row type="flex" :gutter='20' style='padding:4.3vw 3vw'>
           <van-col span="8" style='text-align:right'>
@@ -251,7 +300,7 @@
             <Public-From label="" :columns='questionClassify' @picker-confirm='(obj) => {
               auditFaildCauseContent.problemType = obj.uId;
               getQuestionType(obj)
-            }' type="select" />
+            }' type="select" ref='questionClassify'/>
           </van-col>
         </van-row>
         <van-row type="flex" :gutter='20' style='padding:4.3vw 3vw'>
@@ -261,7 +310,7 @@
           <van-col span="16">
             <Public-From label="" :columns='questionType' type="select" @picker-confirm="(obj) => {
               auditFaildCauseContent.problemItem = obj.uId;
-            }"/>
+            }" ref='questionType'/>
           </van-col>
         </van-row>
         <van-row type="flex" :gutter='20' style='padding:4.3vw 3vw'>
@@ -305,6 +354,13 @@ export default class RecipeDetail extends Vue {
       problemItem: '',
       auditOpinion: ''
   }
+  getDescribeStr (obj:any) {
+    let str = '';
+    obj && obj.forEach((item:any, index:any):any => {
+      str += obj.length > 1 ? item.describe + ',' : item.describe;
+    })
+    return str;
+  } //获取临床诊断字样
   getDetatilData () {
     this.$get(`/prescription/precision/recipes/recipe/recipeDetail?uId=${this.$route.query.uId}&auditStatus=${this.$route.query.sourceStatus}`, {}, {
       "Content-Type" : 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -382,7 +438,13 @@ export default class RecipeDetail extends Vue {
         return data;
       }],
     }).then((res:any):any => {
-      res.data.code == 0 ? this.$toast.success('审核通过') : this.$toast.fail(res.data.msg)
+      res.data.code == 0 ? this.$toast.success(res.data.msg) : this.$toast.fail(res.data.msg)
+      res.data.code == 0 && this.getDetatilData();
+      this.$get(`/prescription/precision/recipes/recipe/showRecipeProgress/${this.$route.query.uId}`, {}, {
+        "Content-Type" : 'application/x-www-form-urlencoded; charset=UTF-8',
+      }).then((res: any):any => {
+        this.progressData = res.data.data[res.data.data.length - 1];
+      }) 
     })
   } // 审核
   getQuestionType (obj:any) {
@@ -431,6 +493,11 @@ export default class RecipeDetail extends Vue {
       }
     }
   }
+  .auditContent {
+    position:fixed;
+    bottom:0rem;
+    background:#f7f8fa;
+  }
   .recipe-detail-panel-header {
     height: 11.7vw;
     > span {
@@ -443,13 +510,16 @@ export default class RecipeDetail extends Vue {
       font-weight:600
     }
     .header-icon {
-      margin-left:65.1vw;
+      margin-left:60.1vw;
     }
     
   }
   .recipe-detail-panel-body {
     border-top:	solid 0.3vw #e5e5e5;
     .van-row {
+      // .van-col:first-child {
+      //   text-align: right;
+      // }
       padding:2vw 4vw;
       font-size: 3.5vw;
     }

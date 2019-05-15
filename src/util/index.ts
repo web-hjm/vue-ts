@@ -2,7 +2,7 @@ import CryptoJS from 'crypto-js';
 let apiStr = ''
 switch (process.env.NODE_ENV) {
     case 'dev':
-        apiStr = 'http://10.6.12.122/apis/'
+        apiStr = 'https://cf-test.kangmei.com.cn/apis/'
         break;
     case 'test':
         apiStr = 'https://cf-test.kangmei.com.cn/apis/'

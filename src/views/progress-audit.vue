@@ -14,8 +14,8 @@
                     <van-row type="flex" :gutter='20' style='padding:3.2vw 0vw'>
                         <van-col span="24" class='progress-audit-man'>
                         {{item.handlerRealName || item.billDoctor || ""}}
-                        <p>审核状态：{{item.machineStatus ? (item.machineStatus + '级') : ''}}</p>
-                        <p >原因：<span class='audit-cause'>{{ item.auditOpinion || ''}}</span></p>
+                        <p v-if='item.handleStatus == 30 || item.handleStatus == 41 || item.handleStatus == 60 || item.handleStatus == 110'>审核状态：{{item.machineStatus ? (item.machineStatus + '级') : ''}}</p>
+                        <p v-if='item.handleStatus == 30 || item.handleStatus == 41 || item.handleStatus == 60 || item.handleStatus == 110'>原因：<span class='audit-cause'>{{ item.handleStatus != '30' ?  item.auditOpinion : (item.machineStatus == 1 ||item.machineStatus == 2 || item.machineStatus == 3) ? JSON.parse(item.machineResult)[0].machineTitle : ''}}</span></p>
                         </van-col>
                     </van-row>
                 </div>
@@ -114,8 +114,24 @@ export default class ProgressAudit extends Vue {
         "Content-Type" : 'application/x-www-form-urlencoded; charset=UTF-8',
         }).then((res: any):any => {
             this.progressData = res.data.data;
+            let onedatacf:any = {};
+            let _index:any = '';
+            let prescriptionType:any = this.$route.query.prescriptionType;
+            let billDoctor:string = this.$route.query.billDoctor
+            this.progressData.forEach(function(val:any, index:any) {
+                if(val.handleStatus == 10) {
+                    onedatacf = val
+                    onedatacf.prescriptionType = prescriptionType
+                    onedatacf.billDoctor = billDoctor
+                }  else if(prescriptionType == 1 && (val.handleStatus == 11||val.handleStatus == 12)) {
+                    _index = index
+                }  else if(prescriptionType == 0 && val.handleStatus == 30) {
+                    _index = index
+                }
+            })
+                this.progressData = this.progressData.slice(_index, this.progressData.length)
+                this.progressData.splice(0, 0, onedatacf);
         });
-        
     }
 }
 </script>

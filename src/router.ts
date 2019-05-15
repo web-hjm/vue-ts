@@ -64,7 +64,7 @@ export const router = new Router({
 })
 
 router.beforeEach((to:any, from:any, next:any):any => {
-  if (!(window.localStorage.getItem('token') && window.localStorage.getItem('token'))) {
+  if (!(window.localStorage.getItem('token') && window.localStorage.getItem('openId'))) {
     if (to.path === '/login'){
       next();
     } else {
@@ -93,9 +93,7 @@ router.beforeEach((to:any, from:any, next:any):any => {
       }
     } // 权限判断
     // next();
-    console.log(to, util.getUrlParams(), '跳转前', !to.meta.jurisdiction);
     // !to.meta.jurisdiction && next();
     (to.path === util.getUrlParams().type) && to.meta.jurisdiction ? next(): (to.meta.jurisdiction || to.path == '/') ? next({path:util.getUrlParams().type}) : next();
-    console.log(to, util.getUrlParams(), '跳转后')
   }
 })

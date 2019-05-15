@@ -2,7 +2,7 @@
 // 这里只列一部分，具体配置惨考文档啊
 // const tsImportPluginFactory = require('ts-import-plugin');
 // const merge = require('webpack-merge');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 module.exports = {
     // baseUrl  type:{string} default:'/' 
     // 将部署应用程序的基本URL
@@ -10,6 +10,15 @@ module.exports = {
     // 默认情况下，Vue CLI假设您的应用程序将部署在域的根目录下。
     // https://www.my-app.com/。如果应用程序部署在子路径上，则需要使用此选项指定子路径。例如，如果您的应用程序部署在https://www.foobar.com/my-app/，集baseUrl到'/my-app/'.
     publicPath: "./",
+    // plugins: {
+    //     'autoprefixer': {
+    //         browsers: ['Android >= 4.0', 'iOS >= 7']
+    //     },
+    //     'postcss-pxtorem': {
+    //         rootValue: 37.5,
+    //         propList: ['*']
+    //     }
+    // },
 
     // outputDir: 在npm run build时 生成文件的目录 type:string, default:'dist'
 
