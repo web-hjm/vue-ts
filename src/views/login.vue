@@ -112,7 +112,7 @@ export default class Login extends Vue {
                   validateCode: this.verifyVal,
                   validateCodeKey: this.uuid
             } : {
-                  code: theRequest.code || '0619ZKxk1ppBan0iEMAk1NQOxk19ZKxy',
+                  code: theRequest.code || '061w6fqx1dWG0a05L7ox1zm4qx1w6fqk',
                   phoneNumber: util.encrypt(this.username),
                   password: util.encrypt(this.password),
                   validateCodeKey: this.uuid

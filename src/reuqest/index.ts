@@ -39,7 +39,7 @@ axios.interceptors.response.use((response:any):any => {
         return response
     }
 },(error:any) => {
-    Toast('请求失败');
+    // Toast('请求失败');
     return error
 // 对响应错误做点什么
 })

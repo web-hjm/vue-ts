@@ -29,6 +29,11 @@ module.exports = {
     //用于放置生成的静态资源 (js、css、img、fonts) 的；（项目打包之后，静态资源会放在这个文件夹下）
 
     assetsDir: "static",
+    chainWebpack: config => {
+
+        config.output.filename('[name].[hash].js').end();
+
+    },
     // baseUrl: './',
     // assetsPublicPath: './',
     // css的处理

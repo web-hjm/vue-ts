@@ -1,5 +1,6 @@
 <template>
   <div class='recipe-content'>
+
     <form action="/">
       <van-search
         v-model="searchVal"
@@ -146,6 +147,7 @@ export default class Recipe extends Vue {
   private childrenSelectVal: any = ''
   private startTime: any = '' //起始时间
   private endTime: any = '' //起始时间
+  // private pullDownStatus: any = false // 下拉刷新状态
   private pageTotal: number = 0;
   private recipeType: any[] = [{
     text: '拍方上传',
@@ -176,7 +178,14 @@ export default class Recipe extends Vue {
     }
   }
   activated() {
-   this.loadingShow = false; 
+   this.loadingShow = false; //加载
+   this.getPanelData();
+    this.$route.path == '/recipe/normal' && this.$post('prescription/prePrescriptionChannel/getParentChannelByUserId').then((res: any):any => {
+      this.sourceSelectData = res.data.data.map((item:any) => {
+        item.text = item.name;
+        return item
+      });
+    }) // 请求来源
   }
   onSearch (val:any) {
     this.searchVal = val;
@@ -227,9 +236,9 @@ export default class Recipe extends Vue {
       }],
     }).then((res:any):any => {
       this.loadingShow = false;
+      // this.pullDownStatus = false;
       this.pageTotal = res.data.data.total;
       this.panelData = this.panelData.concat(res.data.data.rows);
-      console.log(this.panelData)
       if ((this.panelData.length <= 0) || (res.data.data.rows.length <= 0)) {
         this.$toast('没有更多数据啦');
         this.panelData = [];
@@ -283,13 +292,6 @@ export default class Recipe extends Vue {
     })
   }
   mounted() {
-    this.getPanelData();
-    this.$route.path == '/recipe/normal' && this.$post('prescription/prePrescriptionChannel/getParentChannelByUserId').then((res: any):any => {
-      this.sourceSelectData = res.data.data.map((item:any) => {
-        item.text = item.name;
-        return item
-      });
-    }) // 请求来源
     let _this = this;
     window.onscroll = () => {
       if(this.$route.params.type == 'normal' || this.$route.params.type == 'question') {

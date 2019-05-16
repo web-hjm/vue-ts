@@ -2,16 +2,16 @@ import CryptoJS from 'crypto-js';
 let apiStr = ''
 switch (process.env.NODE_ENV) {
     case 'dev':
-        apiStr = 'https://cf-test.kangmei.com.cn/apis/'
+        apiStr = 'https://cf.kangmei.com.cn/apis/'
         break;
     case 'test':
         apiStr = 'https://cf-test.kangmei.com.cn/apis/'
         break;
     case 'uat':
-        apiStr = ' https://cf-uat.kangmei.com.cn/apis/'
+        apiStr = 'https://cf-uat.kangmei.com.cn/apis/'
         break;
     case 'prod':
-        apiStr = ' https://cf.kangmei.com.cn/apis/'
+        apiStr = 'https://cf.kangmei.com.cn/apis/'
         break;
 }
 export default {
